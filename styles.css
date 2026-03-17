@@ -25,6 +25,7 @@
     /* Layout */
     --bottom-nav-height: 80px;
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --nav-bg: rgba(255, 255, 255, 0.85);
     
     /* Animation (Spring-like) */
     --transition-fast: 0.15s ease-out;
@@ -40,6 +41,7 @@
         --text-primary: rgba(255, 255, 255, 0.9);
         --text-secondary: rgba(255, 255, 255, 0.6);
         --border-color: rgba(255, 255, 255, 0.1);
+        --nav-bg: rgba(25, 25, 25, 0.85);
     }
 }
 
@@ -346,7 +348,7 @@ p {
     left: 0;
     right: 0;
     height: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
-    background: rgba(255, 255, 255, 0.85); /* Telegram Glass Effect */
+    background: var(--nav-bg); /* Telegram Glass Effect */
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid var(--border-color);
