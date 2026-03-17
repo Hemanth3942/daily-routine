@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.app = {
         addTemplate: handleAddTemplate,
         sendChatMessage: handleSendChatMessage,
+        toggleChat: toggleChat,
         toggleSidebar: toggleSidebar,
         createNewChat: () => createNewChatSession(true),
         switchToChat: switchToChat,
@@ -471,9 +472,33 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    // === AI Coach Chatbot (Multi-Session) ===
+    // === AI Coach Chatbot (Multi-Session, Floating Widget) ===
     const GROQ_API_KEY = "gsk_" + "onTYULCES0dQKXerCpl7WGdyb3FYvCpRHkvIWyax2ee7kacniVbg";
+    let chatIsOpen = false;
 
+    function toggleChat() {
+        chatIsOpen = !chatIsOpen;
+        const chatWindow = document.getElementById('ai-chat-window');
+        const fab = document.getElementById('ai-chat-toggle');
+        const fabIcon = document.getElementById('chat-fab-icon');
+
+        if (chatIsOpen) {
+            chatWindow.classList.add('open');
+            fab.classList.add('open');
+            fabIcon.className = 'ph-bold ph-x';
+            // Focus input
+            setTimeout(() => {
+                const input = document.getElementById('chat-input');
+                if (input) input.focus();
+            }, 350);
+        } else {
+            chatWindow.classList.remove('open');
+            fab.classList.remove('open');
+            fabIcon.className = 'ph-fill ph-brain';
+            // Close sidebar too
+            toggleSidebar(false);
+        }
+    }
     // Multi-session state
     let allChatSessions = JSON.parse(localStorage.getItem('aiChatSessions')) || [];
     let activeChatId = localStorage.getItem('aiActiveChatId') || null;
