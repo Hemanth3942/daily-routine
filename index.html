@@ -113,6 +113,29 @@
                     <p>Streaks & Stats</p>
                 </header>
                 <div class="content-wrapper">
+                    <!-- Auth Section -->
+                    <div id="auth-container" class="glass-card" style="margin-bottom: 24px; padding: 20px;">
+                        <div id="logged-out-view" style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                            <i class="ph-duotone ph-user-circle" style="font-size: 3rem; color: var(--text-tertiary);"></i>
+                            <h3 style="font-size: 1.1rem; font-weight: 600;">Sign in to Sync</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-bottom: 8px;">Save your routines securely and access them from any device.</p>
+                            <button id="btn-google-signin" class="btn-primary" style="background: var(--text-primary); color: var(--bg-color); padding: 12px 20px; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; border: 1px solid var(--border-color);">
+                                <i class="ph-bold ph-google-logo"></i>
+                                Continue with Google
+                            </button>
+                        </div>
+                        <div id="logged-in-view" style="display: none; align-items: center; gap: 16px; width: 100%;">
+                            <img id="user-avatar" src="" alt="Profile" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-blue);">
+                            <div style="flex: 1; text-align: left;">
+                                <h3 id="user-name" style="font-size: 1.1rem; font-weight: 600; margin-bottom: 2px;">Name</h3>
+                                <p id="user-email" style="font-size: 0.8rem; color: var(--text-secondary);">email@example.com</p>
+                            </div>
+                            <button id="btn-signout" class="icon-btn" aria-label="Sign Out" style="color: var(--accent-red);">
+                                <i class="ph ph-sign-out"></i>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="stats-grid">
                         <div class="stat-card glass-card">
                             <div class="stat-icon bg-orange">
@@ -200,5 +223,6 @@
     
     <!-- JS -->
     <script src="app.js"></script>
+    <script type="module" src="firebase-auth.js"></script>
 </body>
 </html>
