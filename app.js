@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             chatWindow.classList.remove('open');
             fab.classList.remove('open');
-            fabIcon.className = 'ph-fill ph-brain';
+            fabIcon.className = 'ph-fill ph-robot';
             // Close sidebar too
             toggleSidebar(false);
         }
