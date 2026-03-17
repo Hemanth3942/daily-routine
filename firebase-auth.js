@@ -52,7 +52,23 @@ if (auth) {
             loggedOutView.style.display = 'none';
             loggedInView.style.display = 'flex';
             
-            userAvatar.src = user.photoURL || '';
+            const initialsDiv = document.getElementById('user-avatar-initials');
+            if (user.photoURL) {
+                userAvatar.src = user.photoURL;
+                userAvatar.style.display = 'block';
+                if (initialsDiv) initialsDiv.style.display = 'none';
+            } else {
+                userAvatar.style.display = 'none';
+                if (initialsDiv) {
+                    const name = user.displayName || 'U';
+                    const parts = name.split(' ');
+                    const initials = parts.length >= 2 
+                        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+                        : name.substring(0, 2).toUpperCase();
+                    initialsDiv.textContent = initials;
+                    initialsDiv.style.display = 'flex';
+                }
+            }
             userName.textContent = user.displayName || 'Routine Planner User';
             userEmail.textContent = user.email || '';
             
