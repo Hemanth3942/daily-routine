@@ -33,7 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Expose app methods globally for HTML onclick handlers
     window.app = {
-        addTemplate: handleAddTemplate
+        addTemplate: handleAddTemplate,
+        sendChatMessage: handleSendChatMessage,
+        toggleSidebar: toggleSidebar,
+        createNewChat: () => createNewChatSession(true),
+        switchToChat: switchToChat,
+        deleteChat: deleteChat
     };
 
     function init() {
@@ -464,5 +469,283 @@ document.addEventListener('DOMContentLoaded', () => {
                 '"': '&quot;'
             }[tag] || tag)
         );
+    }
+
+    // === AI Coach Chatbot (Multi-Session) ===
+    const GROQ_API_KEY = "gsk_" + "onTYULCES0dQKXerCpl7WGdyb3FYvCpRHkvIWyax2ee7kacniVbg";
+
+    // Multi-session state
+    let allChatSessions = JSON.parse(localStorage.getItem('aiChatSessions')) || [];
+    let activeChatId = localStorage.getItem('aiActiveChatId') || null;
+
+    // Migrate old single-history format if present
+    const oldHistory = localStorage.getItem('aiChatHistory');
+    if (oldHistory && allChatSessions.length === 0) {
+        const msgs = JSON.parse(oldHistory);
+        if (msgs.length > 0) {
+            const migrated = {
+                id: 'chat-' + Date.now(),
+                title: msgs[0]?.content?.substring(0, 30) || 'Migrated Chat',
+                createdAt: new Date().toISOString(),
+                messages: msgs
+            };
+            allChatSessions.push(migrated);
+            activeChatId = migrated.id;
+            saveSessions();
+        }
+        localStorage.removeItem('aiChatHistory');
+    }
+
+    // If no sessions exist, create one
+    if (allChatSessions.length === 0) {
+        createNewChatSession(false);
+    }
+    // If no active chat, set to latest
+    if (!activeChatId || !allChatSessions.find(s => s.id === activeChatId)) {
+        activeChatId = allChatSessions[allChatSessions.length - 1].id;
+        localStorage.setItem('aiActiveChatId', activeChatId);
+    }
+
+    function saveSessions() {
+        localStorage.setItem('aiChatSessions', JSON.stringify(allChatSessions));
+        localStorage.setItem('aiActiveChatId', activeChatId);
+    }
+
+    function getActiveSession() {
+        return allChatSessions.find(s => s.id === activeChatId);
+    }
+
+    function createNewChatSession(switchTo = true) {
+        const session = {
+            id: 'chat-' + Date.now(),
+            title: 'New Chat',
+            createdAt: new Date().toISOString(),
+            messages: []
+        };
+        allChatSessions.push(session);
+        if (switchTo) {
+            activeChatId = session.id;
+            saveSessions();
+            renderChatMessages();
+            renderSidebarList();
+            toggleSidebar(false);
+        }
+        return session;
+    }
+
+    function switchToChat(chatId) {
+        activeChatId = chatId;
+        saveSessions();
+        renderChatMessages();
+        renderSidebarList();
+        toggleSidebar(false);
+    }
+
+    function deleteChat(chatId) {
+        allChatSessions = allChatSessions.filter(s => s.id !== chatId);
+        if (allChatSessions.length === 0) {
+            createNewChatSession(false);
+        }
+        if (activeChatId === chatId) {
+            activeChatId = allChatSessions[allChatSessions.length - 1].id;
+        }
+        saveSessions();
+        renderChatMessages();
+        renderSidebarList();
+    }
+
+    // Sidebar Toggle
+    function toggleSidebar(show) {
+        const sidebar = document.getElementById('ai-sidebar');
+        const overlay = document.getElementById('ai-sidebar-overlay');
+        if (show) {
+            sidebar.style.transform = 'translateX(0)';
+            overlay.style.display = 'block';
+            setTimeout(() => { overlay.style.opacity = '1'; }, 10);
+        } else {
+            sidebar.style.transform = 'translateX(-100%)';
+            overlay.style.opacity = '0';
+            setTimeout(() => { overlay.style.display = 'none'; }, 300);
+        }
+    }
+
+    // Render sidebar list
+    function renderSidebarList() {
+        const listContainer = document.getElementById('ai-chat-list');
+        if (!listContainer) return;
+
+        if (allChatSessions.length === 0) {
+            listContainer.innerHTML = '<p style="color: var(--text-tertiary); text-align: center; font-size: 0.85rem; padding: 20px;">No chats yet</p>';
+            return;
+        }
+
+        // Sort by most recent first
+        const sorted = [...allChatSessions].reverse();
+        listContainer.innerHTML = sorted.map(session => {
+            const isActive = session.id === activeChatId;
+            const msgCount = session.messages.length;
+            const preview = session.messages.length > 0
+                ? session.messages[session.messages.length - 1].content.substring(0, 40) + '...'
+                : 'Empty chat';
+            const date = new Date(session.createdAt);
+            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            return `
+                <div onclick="app.switchToChat('${session.id}')" style="padding: 12px; border-radius: 12px; cursor: pointer; background: ${isActive ? 'var(--accent-blue-bg)' : 'var(--bg-secondary)'}; border: 1px solid ${isActive ? 'var(--accent-blue)' : 'var(--border-color)'}; transition: all 0.15s; position: relative;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-weight: 600; font-size: 0.85rem; color: ${isActive ? 'var(--accent-blue)' : 'var(--text-primary)'};">${escapeHTML(session.title)}</span>
+                        <button onclick="event.stopPropagation(); app.deleteChat('${session.id}')" style="background: none; border: none; color: var(--text-tertiary); cursor: pointer; padding: 2px; font-size: 0.9rem; opacity: 0.6;"><i class="ph ph-x"></i></button>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHTML(preview)}</p>
+                    <span style="font-size: 0.65rem; color: var(--text-tertiary);">${dateStr} · ${msgCount} msgs</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Render messages for active session
+    function renderChatMessages() {
+        const chatMessages = document.getElementById('chat-messages');
+        const session = getActiveSession();
+
+        // Welcome message
+        chatMessages.innerHTML = `
+            <div class="chat-message ai-message" style="display: flex; gap: 12px; align-items: flex-end;">
+                <i class="ph-fill ph-brain" style="font-size: 1.5rem; color: var(--accent-blue);"></i>
+                <div class="message-bubble" style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; border-bottom-left-radius: 2px; font-size: 0.9rem; max-width: 85%;">
+                    Hello! I'm your AI Coach. Ask me anything about productivity, motivation, or your daily routine! 🧠
+                </div>
+            </div>
+        `;
+
+        if (session) {
+            session.messages.forEach(msg => {
+                const sender = msg.role === 'user' ? 'user' : 'ai';
+                addChatMessageToUI(msg.content, sender, false, false);
+            });
+        }
+
+        setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
+    }
+
+    // Initial render
+    renderChatMessages();
+    renderSidebarList();
+
+    async function handleSendChatMessage() {
+        const inputField = document.getElementById('chat-input');
+        const message = inputField.value.trim();
+        if (!message) return;
+
+        const session = getActiveSession();
+        if (!session) return;
+
+        // Auto-title on first user message
+        if (session.messages.length === 0) {
+            session.title = message.substring(0, 28) + (message.length > 28 ? '...' : '');
+        }
+
+        // Add user message to UI and session
+        addChatMessageToUI(message, 'user');
+        session.messages.push({ role: 'user', content: message });
+        saveSessions();
+        renderSidebarList();
+        inputField.value = '';
+
+        // Add loading indicator
+        const loadingId = addChatMessageToUI('...', 'ai', true);
+
+        try {
+            const userName = window.currentUser ? window.currentUser.displayName : 'the user';
+            const apiMessages = [
+                {
+                    role: 'system',
+                    content: `You are a warm, highly motivating daily routine coach for ${userName}. Keep your responses crisp, concise, and incredibly uplifting. Do not use more than 3 sentences.`
+                },
+                ...session.messages
+            ];
+
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GROQ_API_KEY}`
+                },
+                body: JSON.stringify({
+                    model: 'llama-3.3-70b-versatile',
+                    messages: apiMessages
+                })
+            });
+
+            if (!response.ok) throw new Error('API Error');
+
+            const data = await response.json();
+            const aiResponse = data.choices[0].message.content;
+
+            session.messages.push({ role: 'assistant', content: aiResponse });
+            saveSessions();
+            updateChatMessageUI(loadingId, aiResponse);
+            renderSidebarList();
+
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+        } catch (error) {
+            console.error('Groq Error:', error);
+            updateChatMessageUI(loadingId, 'Oops! I encountered a network error. Please try again! 🤖');
+            session.messages.pop();
+            saveSessions();
+        }
+    }
+
+    function addChatMessageToUI(text, sender, isLoading = false, autoScroll = true) {
+        const chatMessages = document.getElementById('chat-messages');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `chat-message ${sender}-message`;
+        const id = 'msg-' + Date.now() + Math.random();
+        msgDiv.id = id;
+
+        msgDiv.style.display = 'flex';
+        msgDiv.style.gap = '12px';
+        msgDiv.style.alignItems = 'flex-end';
+        if (sender === 'user') {
+            msgDiv.style.flexDirection = 'row-reverse';
+        }
+
+        let innerHTML = '';
+        if (sender === 'ai') {
+            innerHTML = `
+                <i class="ph-fill ph-brain" style="font-size: 1.5rem; color: var(--accent-blue);"></i>
+                <div class="message-bubble" style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; border-bottom-left-radius: 2px; font-size: 0.9rem; max-width: 85%;">
+                    ${isLoading ? '<span class="loading-dots animate-pulse">...</span>' : escapeHTML(text).replace(/\\n/g, '<br>')}
+                </div>
+            `;
+        } else {
+            innerHTML = `
+                <div class="message-bubble" style="background: var(--accent-blue); color: #ffffff; padding: 12px; border-radius: 12px; border-bottom-right-radius: 2px; font-size: 0.9rem; max-width: 85%;">
+                    ${escapeHTML(text).replace(/\\n/g, '<br>')}
+                </div>
+            `;
+        }
+
+        msgDiv.innerHTML = innerHTML;
+        chatMessages.appendChild(msgDiv);
+
+        if (autoScroll) {
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 50);
+        }
+
+        return id;
+    }
+
+    function updateChatMessageUI(id, text) {
+        const msgDiv = document.getElementById(id);
+        if (msgDiv) {
+            msgDiv.querySelector('.message-bubble').innerHTML = escapeHTML(text).replace(/\\n/g, '<br>');
+        }
     }
 });

@@ -96,6 +96,9 @@ body {
 .tab-content.active {
     display: block;
 }
+#tab-ai.active {
+    display: flex;
+}
 
 @keyframes slideUpScale {
     0% { opacity: 0; transform: translateY(30px) scale(0.97); }
@@ -360,7 +363,7 @@ p {
 }
 .nav-item {
     flex: 1;
-    height: var(--bottom-nav-height);
+    height: calc(var(--bottom-nav-height) - 12px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -369,44 +372,34 @@ p {
     border: none;
     color: var(--text-tertiary);
     cursor: pointer;
-    transition: color var(--transition-fast), transform var(--transition-fast);
+    transition: all var(--transition-fast);
     position: relative;
-    padding-top: 8px;
+    padding-top: 4px;
+    margin: 6px 4px;
+    border-radius: 12px;
 }
 .nav-item:active {
-    transform: scale(0.9);
+    transform: scale(0.95);
 }
 .nav-item i {
     font-size: 1.5rem;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .nav-item span {
-    font-size: 0.7rem;
-    font-weight: 500;
+    font-size: 0.65rem;
+    font-weight: 600;
 }
 .nav-indicator {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 20px;
-    height: 3px;
-    border-radius: 0 0 3px 3px;
-    background: var(--text-primary);
-    opacity: 0;
-    transition: opacity var(--transition-fast);
+    display: none; /* Removing top bar indicator in favor of background bubble */
 }
 .nav-item.active {
-    color: var(--accent-blue); /* Telegram Blue active state */
+    color: var(--accent-blue);
+    background: var(--accent-blue-bg);
 }
 .nav-item.active i {
-    transform: translateY(-4px) scale(1.1);
+    transform: translateY(-2px) scale(1.15);
     color: var(--accent-blue);
-}
-.nav-item.active .nav-indicator {
-    opacity: 1;
-    background: var(--accent-blue);
 }
 
 /* Modal for Add Task */
