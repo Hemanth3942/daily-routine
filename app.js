@@ -29,7 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateTitle = document.getElementById('current-date');
     
     // Initialize App
-    init();
+
+
+    // Groq API Key
+    const GROQ_API_KEY = "gsk_" + "onTYULCES0dQKXerCpl7WGdyb3FYvCpRHkvIWyax2ee7kacniVbg";
 
     // Expose app methods globally for HTML onclick handlers
     window.app = {
@@ -62,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
         calculateStreak();
         renderSuggestions();
         setupNotifications();
+        updateDailyQuote();
         
         // Setup notes
         notesArea.value = notes;
@@ -472,8 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
-    // === AI Coach Chatbot (Multi-Session, Floating Widget) ===
-    const GROQ_API_KEY = "gsk_" + "onTYULCES0dQKXerCpl7WGdyb3FYvCpRHkvIWyax2ee7kacniVbg";
+    // === Floating Action Button Toggle (moved GROQ_API_KEY up) ===
     let chatIsOpen = false;
 
     function toggleChat() {
@@ -767,10 +770,55 @@ document.addEventListener('DOMContentLoaded', () => {
         return id;
     }
 
+
     function updateChatMessageUI(id, text) {
         const msgDiv = document.getElementById(id);
         if (msgDiv) {
             msgDiv.querySelector('.message-bubble').innerHTML = escapeHTML(text).replace(/\\n/g, '<br>');
         }
     }
+
+    // === AI Daily Quote (Refreshed Daily) ===
+    async function updateDailyQuote() {
+        const quoteEl = document.getElementById('daily-quote');
+        if (!quoteEl) return;
+
+        const today = new Date().toDateString();
+        const cachedData = JSON.parse(localStorage.getItem('cachedQuote') || '{}');
+
+        // Use cached quote if it's from today
+        if (cachedData.date === today && cachedData.quote) {
+            quoteEl.innerText = cachedData.quote;
+            return;
+        }
+
+        try {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${GROQ_API_KEY}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: [{
+                        role: "user",
+                        content: "Generate a short, powerful, one-sentence motivational quote for a daily routine app. No attribution, just the quote text in quotation marks."
+                    }],
+                    max_tokens: 50
+                })
+            });
+
+            const data = await response.json();
+            if (data.choices && data.choices[0]) {
+                const quote = data.choices[0].message.content.trim();
+                quoteEl.innerText = quote;
+                localStorage.setItem('cachedQuote', JSON.stringify({ date: today, quote: quote }));
+            }
+        } catch (error) {
+            console.error("Error fetching daily quote:", error);
+        }
+    }
+    // Initialize App
+    init();
 });
