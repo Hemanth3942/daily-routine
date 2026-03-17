@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#ffffff">
+    <title>Daily Routine Planner</title>
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons for modern sleek icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Content Area -->
+        <main id="main-content">
+            
+            <!-- ====== HOME TAB (TODAY VIEW) ====== -->
+            <section id="tab-home" class="tab-content active">
+                <header class="app-header">
+                    <div class="header-top">
+                        <div class="date-display">
+                            <h1 id="current-day">Today</h1>
+                            <p id="current-date">Loading date...</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="icon-btn" aria-label="Notifications"><i class="ph ph-bell"></i></button>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-card">
+                        <div class="progress-info">
+                            <span>Daily Completion</span>
+                            <span id="progress-text" class="progress-text">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="progress-fill"></div>
+                        </div>
+                    </div>
+                </header>
+                
+                <div class="motivation-banner">
+                    <i class="ph-fill ph-sparkle text-accent-gradient"></i>
+                    <p id="daily-quote">"Small disciplines repeated with consistency every day lead to great achievements."</p>
+                </div>
+
+                <div class="task-section">
+                    <div class="section-header">
+                        <h2>Time Blocks</h2>
+                    </div>
+                    <ul id="task-list" class="task-list">
+                        <!-- Task items will be inserted here dynamically -->
+                    </ul>
+                </div>
+
+                <!-- Floating Action Button -->
+                <button class="fab" id="add-task-btn" aria-label="Add Task">
+                    <i class="ph ph-plus"></i>
+                </button>
+            </section>
+
+            <!-- ====== CALENDAR TAB ====== -->
+            <section id="tab-calendar" class="tab-content">
+                <header class="app-header">
+                    <h1>Calendar</h1>
+                    <p>Weekly overview & Routines</p>
+                </header>
+                <div class="content-wrapper">
+                    <!-- Weekly Calendar -->
+                    <div class="weekly-calendar" id="weekly-calendar">
+                        <!-- JS injected days -->
+                    </div>
+                    
+                    <div class="section-header" style="margin-top: 32px;">
+                        <h2>Routine Templates</h2>
+                    </div>
+                    <div class="templates-grid">
+                        <div class="template-card glass-card">
+                            <i class="ph ph-sun" style="color: var(--accent-orange); font-size: 1.5rem; margin-bottom: 8px;"></i>
+                            <h3>Morning Focus</h3>
+                            <p style="margin-bottom: 12px; font-size: 0.8rem;">3 time blocks</p>
+                            <button class="btn-primary" style="padding: 8px 12px; font-size: 0.85rem;" onclick="app.addTemplate('morning')">Use Template</button>
+                        </div>
+                        <div class="template-card glass-card">
+                            <i class="ph ph-moon" style="color: var(--accent-blue); font-size: 1.5rem; margin-bottom: 8px;"></i>
+                            <h3>Evening Rest</h3>
+                            <p style="margin-bottom: 12px; font-size: 0.8rem;">2 time blocks</p>
+                            <button class="btn-primary" style="padding: 8px 12px; font-size: 0.85rem;" onclick="app.addTemplate('evening')">Use Template</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ====== NOTES TAB ====== -->
+            <section id="tab-notes" class="tab-content">
+                <header class="app-header">
+                    <h1>Reflections</h1>
+                    <p>Daily thoughts & notes</p>
+                </header>
+                <div class="content-wrapper">
+                    <div class="editor-container glass-card">
+                        <textarea id="daily-reflection" placeholder="How did today go? What can be improved? Write your thoughts here..." class="notion-textarea"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ====== PROFILE TAB ====== -->
+            <section id="tab-profile" class="tab-content">
+                <header class="app-header">
+                    <h1>Profile</h1>
+                    <p>Streaks & Stats</p>
+                </header>
+                <div class="content-wrapper">
+                    <div class="stats-grid">
+                        <div class="stat-card glass-card">
+                            <div class="stat-icon bg-orange">
+                                <i class="ph-fill ph-fire"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3 id="streak-count">0</h3>
+                                <p>Day Streak</p>
+                            </div>
+                        </div>
+                        <div class="stat-card glass-card">
+                            <div class="stat-icon bg-green">
+                                <i class="ph-fill ph-check-circle"></i>
+                            </div>
+                            <div class="stat-details">
+                                <h3 id="total-tasks-done">0</h3>
+                                <p>Tasks Done</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-header" style="margin-top: 32px;">
+                        <h2>Smart Suggestions</h2>
+                    </div>
+                    <div class="suggestions-list" id="suggestions-list">
+                        <!-- JS generated suggestions -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" data-tab="home">
+                <div class="nav-indicator"></div>
+                <i class="ph ph-house"></i>
+                <span>Home</span>
+            </button>
+            <button class="nav-item" data-tab="calendar">
+                <div class="nav-indicator"></div>
+                <i class="ph ph-calendar-blank"></i>
+                <span>Calendar</span>
+            </button>
+            <button class="nav-item" data-tab="notes">
+                <div class="nav-indicator"></div>
+                <i class="ph ph-notebook"></i>
+                <span>Notes</span>
+            </button>
+            <button class="nav-item" data-tab="profile">
+                <div class="nav-indicator"></div>
+                <i class="ph ph-user"></i>
+                <span>Profile</span>
+            </button>
+        </nav>
+
+        <!-- Add Task Modal -->
+        <div id="add-task-modal" class="modal-overlay hidden">
+            <div class="modal-content glass-card">
+                <div class="modal-header">
+                    <h3>New Time Block</h3>
+                    <button class="icon-btn close-modal"><i class="ph ph-x"></i></button>
+                </div>
+                <form id="add-task-form">
+                    <div class="form-group">
+                        <input type="text" id="task-title" class="notion-input" placeholder="Task Name (e.g. Morning Workout)" required autocomplete="off">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Start Time</label>
+                            <input type="time" id="task-start" class="notion-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label>End Time</label>
+                            <input type="time" id="task-end" class="notion-input" required>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Add Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JS -->
+    <script src="app.js"></script>
+</body>
+</html>
