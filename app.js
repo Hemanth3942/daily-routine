@@ -636,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Welcome message
         chatMessages.innerHTML = `
             <div class="chat-message ai-message" style="display: flex; gap: 12px; align-items: flex-end;">
-                <i class="ph-fill ph-brain" style="font-size: 1.5rem; color: var(--accent-blue);"></i>
+                <i class="ph-fill ph-robot" style="font-size: 1.5rem; color: var(--accent-blue);"></i>
                 <div class="message-bubble" style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; border-bottom-left-radius: 2px; font-size: 0.9rem; max-width: 85%;">
                     Hello! I'm your AI Coach. Ask me anything about productivity, motivation, or your daily routine! 🧠
                 </div>
@@ -742,7 +742,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let innerHTML = '';
         if (sender === 'ai') {
             innerHTML = `
-                <i class="ph-fill ph-brain" style="font-size: 1.5rem; color: var(--accent-blue);"></i>
+                <i class="ph-fill ph-robot" style="font-size: 1.5rem; color: var(--accent-blue);"></i>
                 <div class="message-bubble" style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; border-bottom-left-radius: 2px; font-size: 0.9rem; max-width: 85%;">
                     ${isLoading ? '<span class="loading-dots animate-pulse">...</span>' : escapeHTML(text).replace(/\\n/g, '<br>')}
                 </div>
